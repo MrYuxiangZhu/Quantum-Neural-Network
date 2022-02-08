@@ -33,10 +33,11 @@ typedef vector<iovector > float_cell;
 /********************************************************************************
 *******数据
 ********************************************************************************/
-class QuantumData {
+class QuantumData 
+{
 private:
-    vector<float_cell > SetIn;//记录训练用的数据
-    vector<float_cell > SetOut;//记录训练用数据的目标输出
+    vector<float_cell> SetIn;//记录训练用的数据
+    vector<float_cell> SetOut;//记录训练用数据的目标输出
 	int EachNums;			//每一帧多少数据
     int FrameNums;//帧数量
     int VideoNumVectorSize;//一种类型视频个数
@@ -53,27 +54,30 @@ public:
 		return num;
 	}
     QuantumData(int VideoType,int VideoNum, int Frames, int datas);
-    void AddData(vector<float_cell > indata, vector<float_cell > outdata){
+    void AddData(vector<float_cell> indata, vector<float_cell> outdata)
+	{
 		SetIn = indata;
 		SetOut = outdata;
     }
-    vector<float_cell > GetInputSet() {return SetIn;}
-    vector<float_cell > GetOutputSet(){return SetOut;}
+    vector<float_cell> GetInputSet() {return SetIn;}
+    vector<float_cell> GetOutputSet(){return SetOut;}
 	int GetVideoType(){return VideoTypeVectorSize;};
 	int GetVideoNum(){return VideoNumVectorSize;};
 	int GetFrameNums(){return FrameNums;};
 	int GetEachNums(){return EachNums;};
 	void Write_Data(string filename);	//数据写入硬盘
 	void Read_Data(string filename);	//从硬盘中读数据
-	void Create_Data(vector<float_cell >& input, vector<float_cell >& output);
+	void Create_Data(vector<float_cell>& input, vector<float_cell>& output);
 	vector<float> ChangeToInput(vector<float>& input);//乘以PI / 2
-	vector<float> ChangeToInput(vector<vector<float> >& input);//乘以PI / 2
+	vector<float> ChangeToInput(vector<vector<float>>& input);//乘以PI / 2
 	~QuantumData();
 };
+
 /********************************************************************************
 *******单个神经元
 ********************************************************************************/
-struct QuantumNeuron {
+struct QuantumNeuron 
+{
     int NumInputs;//神经元的输入量
     vector<float> VecWeight;//权重角度
 	vector<float> VecTij;//Tij参数
@@ -84,14 +88,17 @@ struct QuantumNeuron {
     float Activation;//这里是根据输入，通过某个线性函数确定，相当于神经元的输出
     float Error;//误差值
 	//int NetLayer 代表是否是隐层，输入层与隐层,第一层网络之间权值是角度
-    float RandomClamped(int NetLayer){
+    float RandomClamped(int NetLayer)
+	{
 		//srand(time(NULL));//设置随机数种子，使每次产生的随机序列不同
 		if (NetLayer == 1)
 			return rand() / ((float)RAND_MAX + 0.0) * PI / 2;
 		else
 			return -1 + 2 * (rand() / ((float)RAND_MAX + 1));
     }
-    QuantumNeuron(int inputs, int NetLayer){
+
+    QuantumNeuron(int inputs, int NetLayer)
+	{
         //NumInputs = inputs + 1;
 		NumInputs = inputs;
 		ParaAj = 0;
@@ -101,36 +108,43 @@ struct QuantumNeuron {
         Error = 0;
 		if (NetLayer == 1) 
 		{
-			for(int i = 0; i < NumInputs; ++i){
-				VecWeight.push_back(RandomClamped(NetLayer));//初始化权重角度
-				VecTij.push_back(0);
+			for(int i = 0; i < NumInputs; ++i)
+			{
+				VecWeight.emplace_back(RandomClamped(NetLayer));//初始化权重角度
+				VecTij.emplace_back(0);
 			}
 			ParaSigmoid = RandomClamped(2);//初始化Sigmoid权重			
 		}
 		else 
 		{
-			for(int i = 0; i < NumInputs; ++i){
-				VecWeight.push_back(RandomClamped(NetLayer));//初始化权重
-				VecTij.push_back(0);
+			for(int i = 0; i < NumInputs; ++i)
+			{
+				VecWeight.emplace_back(RandomClamped(NetLayer));//初始化权重
+				VecTij.emplace_back(0);
 			}
 			ParaSigmoid = RandomClamped(2);//初始化Sigmoid权重	
 		}
     }
 };
+
 /********************************************************************************
 *******多个神经元
 ********************************************************************************/
-struct QuantumNeuronLayer {
+struct QuantumNeuronLayer 
+{
     int	NumNeurons;//每层拥有的神经元数
     vector<QuantumNeuron> VecNeurons;//神经元容器
 	vector<float> ErrorLayer;
-	float RandomClamped(void){
+	float RandomClamped(void)
+	{
 		return -1 + 2 * (rand() / ((float)RAND_MAX + 1));
     }
-    QuantumNeuronLayer(int neurons, int perNeuron, int NetLayer):NumNeurons(neurons){
-        for(int i = 0; i < NumNeurons; ++i){
-			VecNeurons.push_back(QuantumNeuron(perNeuron, NetLayer));//每个神经元包含权值的个数，也就是与上一层神经元或者输出连接权值个数
-			ErrorLayer.push_back(0);
+    QuantumNeuronLayer(int neurons, int perNeuron, int NetLayer) : NumNeurons(neurons)
+	{
+        for(int i = 0; i < NumNeurons; ++i)
+		{
+			VecNeurons.emplace_back(QuantumNeuron(perNeuron, NetLayer));//每个神经元包含权值的个数，也就是与上一层神经元或者输出连接权值个数
+			ErrorLayer.emplace_back(0);
 		}
     }
 };
@@ -138,7 +152,8 @@ struct QuantumNeuronLayer {
 /********************************************************************************
 *******神经网络
 ********************************************************************************/
-class QuantumNeuralNet {
+class QuantumNeuralNet 
+{
 private:
 	int NumLayers;//总层数
     int NumInputs;//输入量
@@ -152,16 +167,14 @@ private:
     float ERROR_THRESHOLD;     //误差阈值（什么时候停止训练）
     long int TrainCount;     //训练次数（什么时候停止训练）
     vector<QuantumNeuronLayer> VecLayers;//层数
-    bool NetworkTrainingEpoch(vector<iovector >& SetIn, vector<iovector >& SetOut);//训练神经网络
+    bool NetworkTrainingEpoch(vector<iovector>& SetIn, vector<iovector>& SetOut);//训练神经网络
     void CreateNet();//生成网络
     void InitializeNetwork();//初始化
     inline float Sigmoid(float activation, float response);
 	inline float atanderivate(float activation);
-    float RandomClamped(int NetLayer){
-		if (NetLayer == 1)
-			return rand() / ((float)RAND_MAX + 0.0) * PI / 2;
-		else
-			return -1 + 2 * (rand() / ((float)RAND_MAX + 1));
+    float RandomClamped(int NetLayer)
+	{
+		return NetLayer == 1 ? rand() / ((float)RAND_MAX + 0.0) * PI / 2 : -1 + 2 * (rand() / ((float)RAND_MAX + 1));
     }
     bool Debug;//是否输出误差值
 public:
@@ -175,17 +188,21 @@ public:
 		return num;
 	}
     bool Train(QuantumData data, bool Debug);//开始训练
-    enum STOPTYPE{COUNT,ERRORSUM}StopType;
+    enum STOPTYPE 
+	{ 
+		COUNT, 
+		ERRORSUM 
+	} StopType;
 	QuantumNeuralNet();
 	QuantumNeuralNet(string filename);//通过文件地址打开一个已经训练好的网络
-    QuantumNeuralNet(int inputlayer,int outputlayer,int hiddenneurons,int hiddenLayersnum,\
-	float learningRate,float errorthresh,long int trainepochs,STOPTYPE type,bool debug,float errorsum,bool trained,int numepochs);//初始化网络
-    void SetErrorThrehold(float num){ERROR_THRESHOLD = num;}//设置误差
-    void SetCount(long int num){TrainCount = num;}//设置训练次数
+    QuantumNeuralNet(int inputlayer, int outputlayer, int hiddenneurons, int hiddenLayersnum,\
+	float learningRate, float errorthresh, long int trainepochs, STOPTYPE type, bool debug, float errorsum, bool trained, int numepochs);//初始化网络
+    void SetErrorThrehold(float num) 	{ ERROR_THRESHOLD = num; }//设置误差
+    void SetCount(long int num)			{ TrainCount = num; }//设置训练次数
     vector<float> Update(vector<float> inputs);//得到输出
     void SaveNet(string filename);  //保存已经训练的网络
 	int Recongnition(vector<float>& inputs, vector<float>& output, bool Debug);//识别
-	float RecognitionAccuracy(vector<float_cell >& SetIn, vector<float_cell >& SetOut, int Total, bool Debug);//识别图像准确率
+	float RecognitionAccuracy(vector<float_cell>& SetIn, vector<float_cell>& SetOut, int Total, bool Debug);//识别图像准确率
 	vector<float> ActualArray(vector<float>& input);//实际输出
 	void Delete();
 	~QuantumNeuralNet();

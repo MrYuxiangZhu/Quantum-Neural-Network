@@ -54,7 +54,7 @@
  *   void
 =====================================================================
 */
-void BGDiff::BackgroundDiff(Mat src, Mat &imgForeground, Mat& imgBackground, int nFrmNum, int threshold_method, double updateSpeed)
+void Quantum_BGDiff::BackgroundDiff(Mat src, Mat &imgForeground, Mat& imgBackground, int nFrmNum, int threshold_method, double updateSpeed)
 {
     // 源图像的灰度图像
     // Gray Image(uchar) of Source Image
@@ -80,7 +80,7 @@ void BGDiff::BackgroundDiff(Mat src, Mat &imgForeground, Mat& imgBackground, int
 
     // 视频流第一帧，前景与背景都初始化为第一帧的灰度图
     // if it is in the first frame of Video stream, Foreground & Background Image will be inited as Gray Image of First Frame
-    if(nFrmNum == 1)
+    if (nFrmNum == 1)
     {
         src_gray.create(src.size(), CV_8UC1);
         imgForeground_temp.create(src.size(), CV_8UC1);
@@ -202,7 +202,7 @@ void BGDiff::BackgroundDiff(Mat src, Mat &imgForeground, Mat& imgBackground, int
 =====================================================================
 */
 
-void BGDiff::Otsu(Mat src, int& thresholdValue, bool ToShowValue)
+void Quantum_BGDiff::Otsu(Mat src, int& thresholdValue, bool ToShowValue)
 {
     // 输入图像是否为灰度图的标志位
     // the Flag Bit of source image is gray image or not
@@ -214,14 +214,16 @@ void BGDiff::Otsu(Mat src, int& thresholdValue, bool ToShowValue)
 
     // 检查源图像是否为灰度图像
     // Check Source image that is Gray image or not
-    if(src.channels()  != 1)
+    if (src.channels()  != 1)
     {
         gray.create(src.size(), CV_8UC1);
         cvtColor(src, gray, CV_BGR2GRAY);
         grayflag = 0;
     }
     else
+    {
         gray = src;
+    }
 
     // 阈值缓存变量
     // threshold Temp Value
@@ -255,7 +257,7 @@ void BGDiff::Otsu(Mat src, int& thresholdValue, bool ToShowValue)
     int nr = src.rows;
     int nc = src.cols * src.channels();
 
-    for(int j = 0; j < nr; j++)
+    for (int j = 0; j < nr; j++)
     {
         uchar* ImgData = src.ptr<uchar>(j);
 
@@ -269,7 +271,7 @@ void BGDiff::Otsu(Mat src, int& thresholdValue, bool ToShowValue)
     // set up everything
     sum = csum = 0.0;
     n = 0;
-    for(int i = 0; i < 255; i++)
+    for (int i = 0; i < 255; i++)
     {
         // x*f(x)质量矩
         sum += (double)i * (double)ihist[i];
@@ -311,14 +313,17 @@ void BGDiff::Otsu(Mat src, int& thresholdValue, bool ToShowValue)
 
     // 设定阈值最小值
     // set Minimum of threshold value
-    if(thresholdValue_temp < 20)
+    if (thresholdValue_temp < 20)
+    {
         thresholdValue = 20;
+    }
     else
+    {
         thresholdValue = thresholdValue_temp;
-
+    }
     // 是否显示计算得到的阈值
     // Show the threshold value or not
-    if(ToShowValue)
+    if (ToShowValue)
     {
         cout << "OTSU thresholdValue = " << thresholdValue_temp<<", Returned thresholdValue = " << thresholdValue<<'\n'<<endl;
     }

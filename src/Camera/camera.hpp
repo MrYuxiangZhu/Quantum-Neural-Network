@@ -21,7 +21,8 @@ using namespace std;
 /********************************************************************************
 *******摄像头数据
 ********************************************************************************/
-class Camera {
+class Camera 
+{
 private:
     int device_num;             //设备号
     string device_name;         //设备名称
@@ -41,7 +42,7 @@ public:
     string IntToString(int num);   //整形转字符串
     string GetLocalTime(void);     //获取时间字符串
     void DrawText(Mat& image);     //增加水印
-	VideoCapture Get_Capture(void){ return capture ;};
+	VideoCapture Get_Capture(void) { return capture ;};
 };
 
 #endif

@@ -49,7 +49,7 @@ int main( int argc, char** argv )
    // 'p' 打印OTSU算法中找到的阈值
    char ctrl;
 
-   BGDiff BGDif;
+   Quantum_BGDiff BGDif;
 
    VideoCapture capture;
    capture = VideoCapture("./Video/Camera Road 01.avi");

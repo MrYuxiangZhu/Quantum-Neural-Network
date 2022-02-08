@@ -4,26 +4,6 @@
 ****版  本：1.0
 ****日  期：2018/8/13
 *********************************************************************************/
-/*=================================================================
- * Extract Background & Foreground Model by ViBe Algorithm using OpenCV Library.
- *
- * Copyright (C) 2017 Chandler Geng. All rights reserved.
- *
- *     This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as published
- * by the Free Software Foundation; either version 2 of the License, or (at
- * your option) any later version.
- *
- *     This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- *     You should have received a copy of the GNU General Public License along
- * with this program; if not, write to the Free Software Foundation, Inc., 59
- * Temple Place, Suite 330, Boston, MA 02111-1307 USA
-===================================================================
-*/
 
 #include "QuantumViBe.hpp"
 
@@ -49,13 +29,15 @@
 =====================================================================
 */
 
-Process_Frames_accumulate_block::Process_Frames_accumulate_block() {
+Process_Frames_accumulate_block::Process_Frames_accumulate_block() 
+{
     num_samples = DEFAULT_NUM_SAMPLES;
     num_min_matches = DEFAULT_MIN_MATCHES;
     radius = DEFAULT_RADIUS;
     random_sample = DEFAULT_RANDOM_SAMPLE;
     fgtimes = DEFAULT_FOREGROUND_TIME;
 }
+
 /*===================================================================
  * 并行子函数：Process_Frames_accumulate_block::operator()
  * 说明：独立线程计算；
@@ -70,13 +52,13 @@ Process_Frames_accumulate_block::Process_Frames_accumulate_block() {
 =====================================================================
 */
 template<typename Iterator>
-void Process_Frames_accumulate_block::operator()(const Mat& img, Iterator first, Iterator last, Iterator colums, vector<vector<unsigned char> >& FGModel, vector<vector<vector<unsigned char> > >& result) 
+void Process_Frames_accumulate_block::operator()(const Mat& img, Iterator first, Iterator last, Iterator colums, vector<vector<unsigned char> >& FGModel, vector<vector<vector<unsigned char>>>& result) 
 {   //每个子序列累加，不能通过线程的返回值返回累加结果，而是通过一个result引用将结果返回给主线程
     RNG rng;
     int k = 0, dist = 0, matches = 0;
-    for(int i = *first; i <= *(last-1); ++i)
+    for (int i = *first; i <= *(last-1); ++i)
 	{
-        for(int j = 0; j <= *(colums - 1); ++j)
+        for (int j = 0; j <= *(colums - 1); ++j)
         {
             //========================================
             //        前景提取   |   Extract Foreground Areas
@@ -99,7 +81,8 @@ void Process_Frames_accumulate_block::operator()(const Mat& img, Iterator first,
             for(k = 0, matches = 0; matches < num_min_matches && k < num_samples; ++k)
             {
                 dist = abs(result[i][j][k] - img.at<unsigned char>(i, j));
-                if (dist < radius) {
+                if (dist < radius) 
+                {
                     matches++;
                 }
             }
@@ -202,6 +185,7 @@ void Process_Frames_accumulate_block::operator()(const Mat& img, Iterator first,
         }
     }
 }
+
 /*===================================================================
  * 多线程构造函数：Process_Frames_parallel_accumulate
  * 说明：构造多个线程；
@@ -224,12 +208,14 @@ void Process_Frames_accumulate_block::operator()(const Mat& img, Iterator first,
 =====================================================================
 */
 template<typename Iterator>
-void QViBe::Process_Frames_parallel_accumulate(const Mat& img, Iterator first,Iterator last, Iterator colums, bool Debug) {
+void QViBe::Process_Frames_parallel_accumulate(const Mat& img, Iterator first,Iterator last, Iterator colums, bool Debug) 
+{
     unsigned long const length = std::distance(first, last);//计算序列的长度
     unsigned long const block_size = length / hardware_threads;//重新计算每个线程需要执行的序列大小
     vector<thread> threads(hardware_threads - 1);//开启线程池，只用开启num_threads-1个子线程，因为主线程也可以计算一个序列
     Iterator block_start = first;//序列开始位置
-    for (int i  = 0; i < (hardware_threads - 1); ++i) {//这里只分配子线程的任务序列
+    for (int i  = 0; i < (hardware_threads - 1); ++i) 
+    {//这里只分配子线程的任务序列
         Iterator block_end = block_start;
         std::advance(block_end, block_size);//迭代器block_end向前移动block_size
         threads[i] = std::thread (Process_Frames_accumulate_block(), img, block_start, block_end, colums, std::ref(fgmodel), std::ref(samples));//每个子线程的子序列分配
@@ -238,6 +224,7 @@ void QViBe::Process_Frames_parallel_accumulate(const Mat& img, Iterator first,It
     Process_Frames_accumulate_block()(img, block_start, last, colums, fgmodel, samples);//主线程的任务，注意是last
     std::for_each(threads.begin(), threads.end(), std::mem_fn(&thread::join));//等待子线程完成
 }
+
 /*===================================================================
  * 构造函数：QViBe
  * 说明：初始化QViBe算法部分参数；
@@ -269,7 +256,8 @@ QViBe::QViBe(int num_sam, int min_match, int r, int rand_sam, int times)
     random_sample = rand_sam;
     fgtimes = times;
     int c_off[9] = {-1, 0, 1, -1, 1, -1, 0, 1, 0};
-    for(int i = 0; i < 9; i++){
+    for(int i = 0; i < 9; i++)
+    {
         c_xoff[i] = c_yoff[i] = c_off[i];
 	}
     hardware_threads = Obtain_Thread_Num();
@@ -289,6 +277,7 @@ QViBe::~QViBe(void)
 {
     DeleteSamples();
 }
+
 /*===================================================================
  * 函数名：Init
  * 说明：背景模型初始化；
@@ -321,18 +310,20 @@ void QViBe::Init(NEQR& qimg)
     measure.Measure(qimg, false);
     cv::Mat classicimg = measure.Get_Classic_Image_Reconstructor();				//获取重建后的经典图像       
     //初始化经典图像X轴坐标
-	for(int i = 0; i < Width; ++i) {
-        ClassicImageXaxis.push_back(i);
+	for(int i = 0; i < Width; ++i) 
+    {
+        ClassicImageXaxis.emplace_back(i);
     }
     //初始化经典图像Y轴坐标
-	for(int j = 0; j < Height; ++j) {
-        ClassicImageYaxis.push_back(j);
+	for(int j = 0; j < Height; ++j) 
+    {
+        ClassicImageYaxis.emplace_back(j);
     }
     // 动态分配三维数组，samples[][][num_samples]存储前景被连续检测的次数
     // Dynamic Assign 3-D Array.
     // sample[img.rows][img.cols][num_samples] is a 3-D Array which includes all pixels' samples.
     vector<unsigned char> sample_temp;
-    vector<vector<unsigned char> > samples_temp;
+    vector<vector<unsigned char>> samples_temp;
     //std::cout << "classicimg.rows = " << classicimg.rows << std::endl;
     //std::cout << "classicimg.cols = " << classicimg.cols << std::endl;
     for (int i = 0; i < classicimg.rows; ++i)
@@ -345,12 +336,12 @@ void QViBe::Init(NEQR& qimg)
 			{
                 // 创建样本库时，所有样本全部初始化为0
                 // All Samples init as 0 When Creating Sample Library.
-                sample_temp.push_back(0);
+                sample_temp.emplace_back(0);
 			}
-            samples_temp.push_back(sample_temp);
+            samples_temp.emplace_back(sample_temp);
             sample_temp.clear();
 		}
-        samples.push_back(samples_temp);
+        samples.emplace_back(samples_temp);
         samples_temp.clear();
 	}
     sample_temp.clear();
@@ -360,13 +351,13 @@ void QViBe::Init(NEQR& qimg)
 		{
             // 数组中，在num_samples之外多增的一个值，用于统计该像素点连续成为前景的次数；
             // the '+ 1' in 'num_samples + 1', it's used to count times of this pixel regarded as foreground pixel.
-            sample_temp.push_back(0);
+            sample_temp.emplace_back(0);
 		}
-        fgmodel.push_back(sample_temp);
+        fgmodel.emplace_back(sample_temp);
         sample_temp.clear();
 	}
     vector<unsigned char>().swap(sample_temp);
-    vector<vector<unsigned char> >().swap(samples_temp);
+    vector<vector<unsigned char>>().swap(samples_temp);
     FGModel = cv::Mat::zeros(classicimg.size(),CV_8UC1);           //初始化二值化图像 
 }
 
@@ -447,7 +438,8 @@ void QViBe::Run(NEQR& qimg, bool Debug)
 {
     measure.Measure(qimg, false);
     cv::Mat ClassicImg = measure.Get_Classic_Image_Reconstructor();				//获取重建后的经典图像  
-    if (Debug) {
+    if (Debug) 
+    {
 		double time;
     	double start;
 		std::cout << "QViBe Run!" << std::endl;
@@ -456,10 +448,12 @@ void QViBe::Run(NEQR& qimg, bool Debug)
         time = ((double)getTickCount() - start) / getTickFrequency() * 1000;
     	std::cout << "Time of QViBe = " << time << " ms" << std::endl;
 	}
-	else {
+	else 
+    {
         Process_Frames_parallel_accumulate(ClassicImg, ClassicImageXaxis.begin(), ClassicImageXaxis.end(), ClassicImageYaxis.end(), false);
     }
 }
+
 /*===================================================================
  * 函数名：Show
  * 说明：显示原图像数据；
@@ -474,18 +468,23 @@ void QViBe::Run(NEQR& qimg, bool Debug)
  *   null
 =====================================================================
 */
-void QViBe::Show() {
+void QViBe::Show() 
+{
     std::cout << "samples.size()= " << samples.size() << std::endl;
 	std::cout << "samples[0].size()= " << samples[0].size() << std::endl;
 	std::cout << "samples[0][0].size()= " << samples[0][0].size() << std::endl;
-	for (int i = 0; i < samples.size(); ++i) {
-		for (int j = 0; j < samples[0].size(); ++j) {
-			for(int k = 0; k < samples[0][0].size(); ++k) {
+	for (int i = 0; i < samples.size(); ++i) 
+    {
+		for (int j = 0; j < samples[0].size(); ++j) 
+        {
+			for(int k = 0; k < samples[0][0].size(); ++k) 
+            {
 				std::cout << dec << "samples[" << i << "][" << j << "][" << k << "]=" << (int)samples[i][j][k] << std::endl;
 			}
 		}
 	}
 }
+
 /********************************************************************************
 ****函数名：size()
 ****说  明：获取NEQR量子图像大小
@@ -493,10 +492,12 @@ void QViBe::Show() {
 ****NEQR &QuantumImage:量子图像
 ****返回值：无
 ********************************************************************************/
-void QViBe::size(NEQR& QuantumImage) {
+void QViBe::size(NEQR& QuantumImage) 
+{
 	Height = QuantumImage.Get_Image_Height();
 	Width = QuantumImage.Get_Image_Width();
 }
+
 /*===================================================================
  * 函数名：getFGModel
  * 说明：获取前景模型二值图像；
@@ -511,7 +512,6 @@ void QViBe::size(NEQR& QuantumImage) {
  *   Mat
 =====================================================================
 */
-
 cv::Mat QViBe::Get_FGModel()
 {
     for (int i = 0; i < fgmodel.size(); ++i)
@@ -541,6 +541,6 @@ cv::Mat QViBe::Get_FGModel()
 */
 void QViBe::DeleteSamples()
 {
-    vector<vector<unsigned char> >().swap(fgmodel);
-    vector<vector<vector<unsigned char> > >().swap(samples);
+    vector<vector<unsigned char>>().swap(fgmodel);
+    vector<vector<vector<unsigned char>>>().swap(samples);
 }

@@ -33,28 +33,32 @@ using namespace cv;
 /********************************************************************************
 *******硬件类
 ********************************************************************************/
-class HardWare {
+class HardWare 
+{
 private:
 	unsigned int hardware_threads;								//CPU线程数
 public:
 	HardWare();
-	~HardWare();
+	virtual ~HardWare();
 	int Obtain_Thread_Num(void);								//获取CPU线程个数
 };
+
 /********************************************************************************
 *******NEQR量子图像构建子模块
 ********************************************************************************/
-struct NEQR_Image_Constructor_accumulate_block {
+struct NEQR_Image_Constructor_accumulate_block 
+{
 public:
 	template<typename Iterator>
-	void operator()(const cv::Mat& ClassicImage, Iterator first, Iterator last, Iterator colums, vector<vector<vector<char> > >& result);//NEQR量子图像构建子单元
+	void operator()(const cv::Mat& ClassicImage, Iterator first, Iterator last, Iterator colums, vector<vector<vector<char>>>& result);//NEQR量子图像构建子单元
 	char QuantumState[2]={'0','1'};			//量子基态
 };
 
 /********************************************************************************
 *******NEQR量子图像数据
 ********************************************************************************/
-class NEQR:public HardWare, public NEQR_Image_Constructor_accumulate_block {
+class NEQR : public HardWare, public NEQR_Image_Constructor_accumulate_block 
+{
 private:
     int QuantumNumTotal;										//总量子数量
 	int QuantumNumX;											//X轴量子数量
@@ -63,12 +67,11 @@ private:
 	int Width;													//图像宽度
 	bool Debug;													//是否调试
 	unsigned int hardware_threads;								//CPU线程数
-	
-	vector<vector<vector<char> > >QuantumImage;					//存储量子图像
-	vector<vector<char> >QuantumX;								//量子图像X轴
-	vector<vector<char> >QuantumY;								//量子图像Y轴
-	vector<int>ClassicImageXaxis;								//经典图像X轴
-	vector<int>ClassicImageYaxis;								//经典图像Y轴
+	vector<vector<vector<char>>> QuantumImage;					//存储量子图像
+	vector<vector<char>> QuantumX;								//量子图像X轴
+	vector<vector<char>> QuantumY;								//量子图像Y轴
+	vector<int> ClassicImageXaxis;								//经典图像X轴
+	vector<int> ClassicImageYaxis;								//经典图像Y轴
 	cv::Size dsize = Size(512, 512);							//重设图像大小
 public:
     NEQR();
@@ -79,9 +82,9 @@ public:
 		int height,
 		int width, 
 		unsigned int hardware, 
-		vector<vector<vector<char> > >quantumimage, 
-		vector<vector<char> >quantumx,
-		vector<vector<char> >quantumy, 
+		vector<vector<vector<char>>>quantumimage, 
+		vector<vector<char>>quantumx,
+		vector<vector<char>>quantumy, 
 		vector<int>classicxaxis, 
 		vector<int>classicyaxis):
 		QuantumNumTotal(total),
@@ -109,18 +112,18 @@ public:
 	void Show_QuantumImage(string name);						//显示NEQR图像
 	void Show_ClassicImage(const cv::Mat& ClassicImage);		//显示经典图像
 	void Show_ClassicImage(const cv::Mat& ClassicImage, string name);//显示经典图像
-	vector<vector<char> > Get_Xaxis_Position(){return QuantumX;};	//获取X轴坐标
-	vector<vector<char> > Get_Yaxis_Position(){return QuantumY;};	//获取Y轴坐标
-	vector<int> Get_Classic_Xaxis_Position(){return ClassicImageXaxis;};	//获取X轴坐标
-	vector<int> Get_Classic_Yaxis_Position(){return ClassicImageYaxis;};	//获取Y轴坐标
-	vector<vector<vector<char> > > Get_Quantum_Image_Pixel(void){return QuantumImage;};//获取NEQR量子图像像素
-	void Set_Quantum_Image_Pixel(vector<vector<vector<char> > >& Pixel){QuantumImage = Pixel;};//设置NEQR量子图像像素
+	vector<vector<char>> Get_Xaxis_Position()	{ return QuantumX; };	//获取X轴坐标
+	vector<vector<char>> Get_Yaxis_Position()	{ return QuantumY; };	//获取Y轴坐标
+	vector<int> Get_Classic_Xaxis_Position()	{ return ClassicImageXaxis; };	//获取X轴坐标
+	vector<int> Get_Classic_Yaxis_Position()	{ return ClassicImageYaxis; };	//获取Y轴坐标
+	vector<vector<vector<char>>> Get_Quantum_Image_Pixel(void)	{ return QuantumImage; };//获取NEQR量子图像像素
+	void Set_Quantum_Image_Pixel(vector<vector<vector<char>>>& Pixel) { QuantumImage = Pixel; };//设置NEQR量子图像像素
 	vector<int> size(void);								//获取量子图像大小
-	int Get_Image_Height(void){return Height;};					//获得图像高度
-	int Get_Image_Width(void){return Width;};					//获得图像高度
-	int Get_QuantumNumX(void){return QuantumNumX;};				//获得QuantumNumX
-	int Get_QuantumNumY(void){return QuantumNumY;};				//获得QuantumNumY
-	int Get_QuantumNumTotal(void){return QuantumNumX + QuantumNumY + 8;};//获得QuantumNumTotal
+	int Get_Image_Height(void)		{ return Height; };					//获得图像高度
+	int Get_Image_Width(void)		{ return Width; };					//获得图像高度
+	int Get_QuantumNumX(void)		{ return QuantumNumX; };				//获得QuantumNumX
+	int Get_QuantumNumY(void)		{ return QuantumNumY; };				//获得QuantumNumY
+	int Get_QuantumNumTotal(void)	{ return QuantumNumX + QuantumNumY + 8; };//获得QuantumNumTotal
 	NEQR Clone(void);											//量子图像克隆
 	NEQR Zeros(void);											//空白量子图像
 	NEQR Threshold(char value);									//阈值量子图像
@@ -129,28 +132,30 @@ public:
 /********************************************************************************
 *******量子测量子模块
 ********************************************************************************/
-struct Quantum_Measure_accumulate_block {
+struct Quantum_Measure_accumulate_block 
+{
 public:
 	template<typename Iterator>
-	void operator()(const vector<vector<vector<char> > >& QuantumImage, Iterator first, Iterator last, Iterator colums, vector<vector<unsigned char> >& ClassicImageArray);
-	char QuantumState[2]={'0','1'};			//量子基态
+	void operator()(const vector<vector<vector<char>>>& QuantumImage, Iterator first, Iterator last, Iterator colums, vector<vector<unsigned char>>& ClassicImageArray);
+	char QuantumState[2] = { '0', '1' };			//量子基态
 };
 
 /********************************************************************************
 *******量子测量
 ********************************************************************************/
-class Quantum_Measure:public HardWare, public Quantum_Measure_accumulate_block {
+class Quantum_Measure: public HardWare, public Quantum_Measure_accumulate_block 
+{
 private:
 	int Height;													//经典图像高度
 	int Width;													//经典图像宽度
 	int QuantumNumTotal;										//总量子数量
 	int QuantumNumX;											//X轴量子数量
 	int QuantumNumY;											//Y轴量子数量
-	vector<int>ClassicImageXaxis;								//经典图像X轴
-	vector<int>ClassicImageYaxis;								//经典图像Y轴
-	vector<vector<unsigned char> >ClassicImageArray;			//经典图像二维数组
-	vector<vector<vector<char> > >QuantumImages;				//量子图像
-	vector<vector<char> > QuantumOverFlow;						//溢出位
+	vector<int> ClassicImageXaxis;								//经典图像X轴
+	vector<int> ClassicImageYaxis;								//经典图像Y轴
+	vector<vector<unsigned char>>ClassicImageArray;				//经典图像二维数组
+	vector<vector<vector<char>>>QuantumImages;					//量子图像
+	vector<vector<char>> QuantumOverFlow;						//溢出位
 	cv::Mat CIReconstructor;									//重建的经典图像
 	bool Debug;													//是否调试
 	unsigned int hardware_threads;								//CPU线程数
@@ -161,7 +166,7 @@ public:
 	template<typename Iterator>
 	void Quantum_Measure_parallel_accumulate(NEQR& neqr, Iterator first, Iterator last, Iterator colums, bool Debug);//量子测量多线程并行计算
 	void Measure(NEQR &neqr, bool Debug);											//测量图像
-	vector<vector<unsigned char> > Get_Classic_Image_Array(void){return ClassicImageArray;};//取重建后的经典图像数组
+	vector<vector<unsigned char>> Get_Classic_Image_Array(void) { return ClassicImageArray; };//取重建后的经典图像数组
 	void size(NEQR &QuantumImage);								//获取量子图像大小
 	void Show_ClassicImage(void);								//显示经典图像
 	void Show_ClassicImage(string name);						//显示经典图像
@@ -174,16 +179,18 @@ const float PA = 3.141592/2;	//角度
 /********************************************************************************
 *******FRQI量子图像构建子模块
 ********************************************************************************/
-struct FRQI_Image_Constructor_accumulate_block {
+struct FRQI_Image_Constructor_accumulate_block 
+{
 public:
 	template<typename Iterator>
-	void operator()(const vector<vector<float> >& Parameter, Iterator first, Iterator last, Iterator colums, vector<vector<float> >& result);//FRQI量子图像构建子单元
-	char QuantumState[2]={'0','1'};			//量子基态
+	void operator()(const vector<vector<float>>& Parameter, Iterator first, Iterator last, Iterator colums, vector<vector<float>>& result);//FRQI量子图像构建子单元
+	char QuantumState[2] = {'0','1'};			//量子基态
 };
 /********************************************************************************
 *******FRQI量子图像数据
 ********************************************************************************/
-class FRQI:public HardWare, public FRQI_Image_Constructor_accumulate_block {
+class FRQI : public HardWare, public FRQI_Image_Constructor_accumulate_block 
+{
 private:
 	int QuantumNumTotal;						//总量子数量
 	int QuantumNumX;							//X轴量子数量
@@ -191,21 +198,20 @@ private:
 	int Height;									//图像高度
 	int Width;									//图像宽度
 	bool Debug;									//是否调试
-	float param=1/2;							//系数
+	float param = 1 / 2;						//系数
 	unsigned int hardware_threads;				//CPU线程数
-	
-	vector<vector<float> >QuantumImage;		//存储量子图像
-	vector<vector<char> >QuantumX;				//量子图像X轴
-	vector<vector<char> >QuantumY;				//量子图像Y轴
-	vector<int>ClassicImageXaxis;				//经典图像X轴
-	vector<int>ClassicImageYaxis;				//经典图像Y轴
+	vector<vector<float>> QuantumImage;			//存储量子图像
+	vector<vector<char>> QuantumX;				//量子图像X轴
+	vector<vector<char>> QuantumY;				//量子图像Y轴
+	vector<int> ClassicImageXaxis;				//经典图像X轴
+	vector<int> ClassicImageYaxis;				//经典图像Y轴
 public:
 	FRQI();
 	~FRQI();
-	void Image_Measure(vector<vector<float> >& Parameter, bool Debug);	//测量图像系数
+	void Image_Measure(vector<vector<float>>& Parameter, bool Debug);	//测量图像系数
 	bool Process_First_Frame(bool First);							//第一帧判断
 	template<typename Iterator>
-	void FRQI_Image_Constructor_parallel_accumulate(const vector<vector<float> >& Parameter, Iterator first, Iterator last,Iterator colums, bool Debug);//构建FRQI图像多线程并行计算
+	void FRQI_Image_Constructor_parallel_accumulate(const vector<vector<float>>& Parameter, Iterator first, Iterator last,Iterator colums, bool Debug);//构建FRQI图像多线程并行计算
 	void Constructor(vector<vector<float> >& Parameter, bool Debug);//构建FRQI图像
 	void Show_QuantumImage(void);				//显示FRQI图像
 	void Show_QuantumImage(string name);		//显示FRQI图像

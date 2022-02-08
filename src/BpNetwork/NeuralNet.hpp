@@ -7,27 +7,28 @@
 #ifndef __NEURALNET_HPP
 #define __NEURALNET_HPP
 #define ACTIVATION_RESPONSE 1.0
-#include<string>
-#include<vector>
-#include<math.h>
-#include<stdlib.h>
-#include<iostream>
-#include<stdio.h>
+#include <string>
+#include <vector>
+#include <math.h>
+#include <stdlib.h>
+#include <iostream>
+#include <stdio.h>
 #include <fstream>
 #include <sstream>    //使用stringstream需要引入这个头文件
 
 using namespace std;
 
 typedef vector<float> iovector;
-typedef vector<iovector > float_cell;
+typedef vector<iovector> float_cell;
 
 /********************************************************************************
 *******数据
 ********************************************************************************/
-class Data{
+class Data
+{
 private:
-    vector<float_cell > SetIn;//记录训练用的数据
-    vector<float_cell > SetOut;//记录训练用数据的目标输出
+    vector<float_cell> SetIn;//记录训练用的数据
+    vector<float_cell> SetOut;//记录训练用数据的目标输出
     int EachNums;			//每一帧多少数据
     int FrameNums;//帧数量
     int VideoNumVectorSize;//一种类型视频个数
@@ -44,46 +45,56 @@ public:
 		return num;
 	}
     Data(int VideoType,int VideoNum, int Frames, int datas);
-    void AddData(vector<float_cell > indata, vector<float_cell > outdata){
+    void AddData(vector<float_cell> indata, vector<float_cell> outdata)
+    {
 		SetIn = indata;
 		SetOut = outdata;
     }
-    vector<float_cell > GetInputSet() {return SetIn;}
-    vector<float_cell > GetOutputSet(){return SetOut;}
-	void Create_Data(vector<float_cell >& input, vector<float_cell >& output);
+    vector<float_cell> GetInputSet()  { return SetIn; }
+    vector<float_cell> GetOutputSet() { return SetOut; }
+	void Create_Data(vector<float_cell>& input, vector<float_cell>& output);
     void Write_Data(string filename);	//数据写入硬盘
 	void Read_Data(string filename);	//从硬盘中读数据
 	~Data();
 };
+
 /********************************************************************************
 *******单个神经元
 ********************************************************************************/
-struct Neuron{
+struct Neuron
+{
     int NumInputs;//神经元的输入量
     vector<float> vecWeight;//权重
     float Activation;//这里是根据输入，通过某个线性函数确定，相当于神经元的输出
     float Error;//误差值
-    float RandomClamped(){
-        return -1+2*(rand()/((float)RAND_MAX+1));
+    float RandomClamped()
+    {
+        return -1 + 2 *(rand() / ((float)RAND_MAX + 1));
     }
-    Neuron(int inputs){
-        NumInputs=inputs+1;
-        Activation=0;
-        Error=0;
-        for(int i=0;i<NumInputs+1;i++){
-			vecWeight.push_back(RandomClamped());//初始化权重
+    Neuron(int inputs)
+    {
+        NumInputs  = inputs + 1;
+        Activation = 0;
+        Error = 0;
+        for (int i = 0; i < NumInputs + 1; i++)
+        {
+			vecWeight.emplace_back(RandomClamped());//初始化权重
 		}
     }
 };
+
 /********************************************************************************
 *******多个神经元
 ********************************************************************************/
-struct NeuronLayer{
+struct NeuronLayer
+{
     int	NumNeurons;//每层拥有的神经元数
-    vector<Neuron>	vecNeurons;
-    NeuronLayer(int neurons, int perNeuron):NumNeurons(neurons){
-        for(int i=0;i<NumNeurons;i++){
-			vecNeurons.push_back(Neuron(perNeuron));				//每个神经元包含权值的个数，也就是与上一层神经元或者输出连接权值个数
+    vector<Neuron> vecNeurons;
+    NeuronLayer(int neurons, int perNeuron) : NumNeurons(neurons)
+    {
+        for (int i = 0; i < NumNeurons; i++)
+        {
+			vecNeurons.emplace_back(Neuron(perNeuron));				//每个神经元包含权值的个数，也就是与上一层神经元或者输出连接权值个数
 		}
     }
 };
@@ -92,7 +103,8 @@ typedef vector<float> iovector;
 /********************************************************************************
 *******神经网络
 ********************************************************************************/
-class NeuralNet{
+class NeuralNet
+{
 private:
     int NumInputs;//输入量
     int NumOutputs;//输出量
@@ -105,13 +117,14 @@ private:
     float ERROR_THRESHOLD;     //误差阈值（什么时候停止训练）
     long int TrainCount;     //训练次数（什么时候停止训练）
     vector<NeuronLayer> vecLayers;//层数
-    bool NetworkTrainingEpoch(vector<iovector > &SetIn,vector<iovector > &SetOut);//训练神经网络
+    bool NetworkTrainingEpoch(vector<iovector>& SetIn, vector<iovector>& SetOut);//训练神经网络
     void CreateNet();//生成网络
     void InitializeNetwork();//初始化
     inline float Sigmoid(float activation, float response);
 	inline float atanderivate(float activation);
-    float RandomClamped(){
-        return -1+2*(rand()/((float)RAND_MAX+1));
+    float RandomClamped()
+    {
+        return -1 + 2 * (rand() / ((float)RAND_MAX + 1));
     }
     bool Debug;//是否输出误差值
 public:
@@ -126,14 +139,14 @@ public:
 	}
     bool Train(Data data);//开始训练
     enum STOPTYPE{COUNT,ERRORSUM}StopType;
-    NeuralNet(int inputlayer,int outputlayer,int hiddenneurons,int hiddenLayersnum,\
-	float learningRate,float errorthresh,long int trainepochs,STOPTYPE type,bool debug,float errorsum,bool trained,int numepochs);//初始化网络
-    void SetErrorThrehold(float num){ERROR_THRESHOLD=num;}//设置误差
-    void SetCount(long int num){TrainCount=num;}//设置训练次数
+    NeuralNet(int inputlayer, int outputlayer, int hiddenneurons, int hiddenLayersnum,\
+	float learningRate, float errorthresh, long int trainepochs, STOPTYPE type, bool debug, float errorsum, bool trained, int numepochs);//初始化网络
+    void SetErrorThrehold(float num) { ERROR_THRESHOLD = num; }//设置误差
+    void SetCount(long int num) { TrainCount = num; }//设置训练次数
     vector<float> Update(vector<float> inputs);//得到输出
     NeuralNet(string filename);//通过文件地址打开一个已经训练好的网络
     void saveNet(string filename);//保存已经训练的网络
-    float RecognitionAccuracy(vector<float_cell >& SetIn, vector<float_cell >& SetOut, int Total, bool Debug);//识别图像准确率
+    float RecognitionAccuracy(vector<float_cell>& SetIn, vector<float_cell>& SetOut, int Total, bool Debug);//识别图像准确率
 	vector<float> ActualArray(vector<float>& input);//实际输出
     int Recongnition(vector<float>& inputs, vector<float>& output, bool Debug);//识别
 	~NeuralNet();

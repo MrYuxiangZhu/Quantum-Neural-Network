@@ -46,11 +46,12 @@ using namespace std;
 // the times of foreground detection
 #define DEFAULT_FOREGROUND_TIME 50
 
-struct Process_Frames_accumulate_block {
+struct Process_Frames_accumulate_block 
+{
 public:
 	Process_Frames_accumulate_block();
 	template<typename Iterator>
-    void operator()(const Mat& img, Iterator first, Iterator last, Iterator colums, vector<vector<uchar> >& FGModel, vector<vector<vector<uchar> > >& result); 
+    void operator()(const Mat& img, Iterator first, Iterator last, Iterator colums, vector<vector<uchar>>& FGModel, vector<vector<vector<uchar>>>& result); 
 	 // x的邻居点
     // x's neighborhood points
     int c_xoff[9];
@@ -82,12 +83,14 @@ public:
 	//量子基态
 	char QuantumState[2]={'0','1'};			
 };
-class QViBe:public Process_Frames_accumulate_block, public HardWare{
+
+class QViBe : public Process_Frames_accumulate_block, public HardWare
+{
 private:
 	int Height;													//图像高度
 	int Width;													//图像宽度
-	vector<int>ClassicImageXaxis;								//经典图像X轴
-	vector<int>ClassicImageYaxis;								//经典图像Y轴
+	vector<int> ClassicImageXaxis;								//经典图像X轴
+	vector<int> ClassicImageYaxis;								//经典图像Y轴
     // 样本库
     // Sample Library, size = img.rows * img.cols *  DEFAULT_NUM_SAMPLES
     //unsigned char ***samples;

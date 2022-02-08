@@ -45,13 +45,12 @@
 using namespace cv;
 using namespace std;
 
-class BGDiff
+class Quantum_BGDiff
 {
 public:
     // 背景差分算法
     // Background Difference Algorithm
-    void BackgroundDiff(Mat src, Mat &imgForeground, Mat& imgBackground, int nFrmNum,
-                        int threshold_method = CV_THRESH_OTSU, double updateSpeed = 0.03);
+    void BackgroundDiff(Mat src, Mat &imgForeground, Mat& imgBackground, int nFrmNum, int threshold_method = CV_THRESH_OTSU, double updateSpeed = 0.03);
 
     // 大津法
     // OTSU Algorithm

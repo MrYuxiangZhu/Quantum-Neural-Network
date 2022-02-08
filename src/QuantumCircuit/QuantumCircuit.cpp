@@ -14,14 +14,11 @@
 ****bool Debug：是否调试打印
 ****返回值：无
 *******************************************************************************/
-void Quantum_Operator::Not_Gate(char& ctrl, bool Debug) {
-    if (ctrl == '1') {
-        ctrl = '0';
-    }
-    else {
-        ctrl = '1';
-    }
+void Quantum_Operator::Not_Gate(char& ctrl, bool Debug) 
+{
+    ctrl = ctrl == '1' ? '0' : '1';
 }
+
 /******************************************************************************
 ****函数名：Cnot_Gate()
 ****说  明：CNOT门
@@ -31,16 +28,14 @@ void Quantum_Operator::Not_Gate(char& ctrl, bool Debug) {
 ****bool Debug：是否调试打印
 ****返回值：无
 *******************************************************************************/
-void Quantum_Operator::Cnot_Gate(const char& ctrl, char& ctrled, bool Debug){
-    if (ctrl == '1') {
-		if (ctrled  == '1') {
-			ctrled = '0';
-		}
-		else {
-			ctrled = '1';
-		}
+void Quantum_Operator::Cnot_Gate(const char& ctrl, char& ctrled, bool Debug)
+{
+    if (ctrl == '1') 
+    {
+        ctrled = ctrled == '1' ? '0' : '1';
 	}
 }
+
 /******************************************************************************
 ****函数名：Toffoli_Gate()
 ****说  明：Toffoli门
@@ -51,16 +46,14 @@ void Quantum_Operator::Cnot_Gate(const char& ctrl, char& ctrled, bool Debug){
 ****bool Debug：是否调试打印
 ****返回值：无
 *******************************************************************************/
-void Quantum_Operator::Toffoli_Gate(const char& ctrlone, const char& ctrltwo, char& ctrled, bool Debug){
-    if (ctrlone == '1' && ctrltwo == '1') {
-		if (ctrled == '1') {
-			ctrled = '0';
-		}
-		else {
-			ctrled = '1';
-		}
+void Quantum_Operator::Toffoli_Gate(const char& ctrlone, const char& ctrltwo, char& ctrled, bool Debug)
+{
+    if (ctrlone == '1' && ctrltwo == '1') 
+    {
+        ctrled = ctrled == '1' ? '0' : '1';
 	}
 }
+
 /********************************************************************************
 ****函数名：Quantum_Adder_Operator()
 ****说  明：量子加法器子模块
@@ -73,24 +66,28 @@ void Quantum_Operator::Toffoli_Gate(const char& ctrlone, const char& ctrltwo, ch
 ****bool Debug：是否调试打印
 ****返回值：无
 ********************************************************************************/
-void Quantum_Adder_accumulate_block::Quantum_Adder_Operator(const vector<char>& NumOne, const vector<char>& NumTwo, vector<char>& NumSum, vector<char>& Carry, char& OverFlow, bool Debug) {
+void Quantum_Adder_accumulate_block::Quantum_Adder_Operator(const vector<char>& NumOne, const vector<char>& NumTwo, vector<char>& NumSum, vector<char>& Carry, char& OverFlow, bool Debug) 
+{
     int NumOneSize = NumOne.size();
     int NumTwoSize = NumTwo.size();
     int HalfAdder = NumOneSize;		//半加器个数
     //执行半加器计算,数组中从高到低位排序
-    for (int half = HalfAdder - 1; half >= 0; --half) {
+    for (int half = HalfAdder - 1; half >= 0; --half) 
+    {
         Cnot_Gate(NumOne[half], NumSum[half], Debug);
         Cnot_Gate(NumTwo[half], NumSum[half], Debug);
         Toffoli_Gate(NumOne[half], NumTwo[half], Carry[half], Debug);
     }
     //串行进位
-    for (int serial = HalfAdder - 2; serial >= 0; --serial) {
+    for (int serial = HalfAdder - 2; serial >= 0; --serial) 
+    {
         Toffoli_Gate(NumSum[serial], Carry[serial + 1], Carry[serial], Debug);
         Cnot_Gate(Carry[serial + 1], NumSum[serial], Debug);
     }
     //输出溢出标志位
     Cnot_Gate(Carry[0], OverFlow, Debug);
 }
+
 /******************************************************************************
 ****函数名：Quantum_Adder_accumulate_block::operator()
 ****说  明：量子图像加法并行计算子单元
@@ -107,14 +104,18 @@ void Quantum_Adder_accumulate_block::Quantum_Adder_Operator(const vector<char>& 
 ****返回值：无
 *******************************************************************************/
 template<typename Iterator>
-void Quantum_Adder_accumulate_block::operator()(const vector<vector<vector<char> > >& QuantumImageOne, const vector<vector<vector<char> > >& QuantumImageTwo, Iterator first, Iterator last, Iterator colums, 
-				vector<vector<vector<char> > >& result, vector<vector<vector<char> > >& AdderCarry, vector<vector<char> >& AdderOverFlow, bool Debug) {
-    for (int m = *first; m <= *(last-1); ++m) {
-		for (int n = 0; n <= *(colums-1); ++n) {
+void Quantum_Adder_accumulate_block::operator()(const vector<vector<vector<char>>>& QuantumImageOne, const vector<vector<vector<char>>>& QuantumImageTwo, Iterator first, Iterator last, Iterator colums, 
+				vector<vector<vector<char>>>& result, vector<vector<vector<char>>>& AdderCarry, vector<vector<char>>& AdderOverFlow, bool Debug) 
+{
+    for (int m = *first; m <= *(last-1); ++m) 
+    {
+		for (int n = 0; n <= *(colums-1); ++n) 
+        {
             Quantum_Adder_Operator(QuantumImageOne[m][n], QuantumImageTwo[m][n], result[m][n], AdderCarry[m][n], AdderOverFlow[m][n], Debug);
 		}
 	}
 }
+
 /******************************************************************************
 ****函数名：Quantum_Adder()
 ****说  明：Quantum_Adder构造函数
@@ -126,6 +127,7 @@ Quantum_Adder::Quantum_Adder()
 	hardware_threads = Obtain_Thread_Num();
 	//std::cout << dec << "Quantum_Adder_hardware_threads= " << hardware_threads << std::endl;
 }
+
 /******************************************************************************
 ********量子全加器析构函数
 *******************************************************************************/
@@ -133,6 +135,7 @@ Quantum_Adder::~Quantum_Adder()
 {
 	Delete();
 }
+
 /********************************************************************************
 ****函数名：QuantumImage_Adder_Operator_Init()
 ****说  明：量子加法初始化
@@ -140,48 +143,57 @@ Quantum_Adder::~Quantum_Adder()
 ****NEQR &neqr:量子图像
 ****返回值：无
 ********************************************************************************/
-void Quantum_Adder::QuantumImage_Adder_Operator_Init(NEQR& neqr) {
+void Quantum_Adder::QuantumImage_Adder_Operator_Init(NEQR& neqr) 
+{
     size(neqr);
 	//初始化经典图像X轴坐标
-	for(int i = 0; i < Width; ++i) {
-        ClassicImageXaxis.push_back(i);
+	for (int i = 0; i < Width; ++i) 
+    {
+        ClassicImageXaxis.emplace_back(i);
     }
     //初始化经典图像Y轴坐标
-	for(int j = 0; j < Height; ++j) {
-        ClassicImageYaxis.push_back(j);
+	for (int j = 0; j < Height; ++j) 
+    {
+        ClassicImageYaxis.emplace_back(j);
     }
     //初始化量子图像
     vector<char> pixel_temp;
-	vector<vector<char> > quantum_temp;
+	vector<vector<char>> quantum_temp;
 	//初始化量子图像
-	for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			for (int k = 0; k < 8; ++k) {
-				pixel_temp.push_back(QuantumState[0]);        
+	for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			for (int k = 0; k < 8; ++k) 
+            {
+				pixel_temp.emplace_back(QuantumState[0]);        
 			}
-			quantum_temp.push_back(pixel_temp);
+			quantum_temp.emplace_back(pixel_temp);
 			pixel_temp.clear();
 		}
-		QuantumImageOne.push_back(quantum_temp);
-        QuantumImageTwo.push_back(quantum_temp);
-        QuantumAdderResults.push_back(quantum_temp);
-        QuantumAdderCarry.push_back(quantum_temp);
+		QuantumImageOne.emplace_back(quantum_temp);
+        QuantumImageTwo.emplace_back(quantum_temp);
+        QuantumAdderResults.emplace_back(quantum_temp);
+        QuantumAdderCarry.emplace_back(quantum_temp);
 		quantum_temp.clear();
 	}
     //初始化溢出位
     vector<char> overflow_temp;
-	for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			overflow_temp.push_back(QuantumState[0]);
+	for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			overflow_temp.emplace_back(QuantumState[0]);
 		}
-        QuantumAdderOverFlow.push_back(overflow_temp);
+        QuantumAdderOverFlow.emplace_back(overflow_temp);
         overflow_temp.clear();
 	}
     //删除容器
 	vector<char>().swap(pixel_temp);
     vector<char>().swap(overflow_temp);
-	vector<vector<char> >().swap(quantum_temp);
+	vector<vector<char>>().swap(quantum_temp);
 }
+
 /********************************************************************************
 ****函数名：Adder_Operator_parallel_accumulate()
 ****说  明：量子加法器多线程并行计算
@@ -195,12 +207,14 @@ void Quantum_Adder::QuantumImage_Adder_Operator_Init(NEQR& neqr) {
 ****返回值：无
 ********************************************************************************/
 template<typename Iterator>
-void Quantum_Adder::Adder_Operator_parallel_accumulate(const vector<vector<vector<char> > >& QuantumImageOne, const vector<vector<vector<char> > >& QuantumImageTwo, Iterator first, Iterator last, Iterator colums, bool Debug) {
+void Quantum_Adder::Adder_Operator_parallel_accumulate(const vector<vector<vector<char>>>& QuantumImageOne, const vector<vector<vector<char>>>& QuantumImageTwo, Iterator first, Iterator last, Iterator colums, bool Debug) 
+{
 	unsigned long const length = std::distance(first, last);//计算序列的长度
     unsigned long const block_size = length / hardware_threads;//重新计算每个线程需要执行的序列大小
     vector<thread> threads(hardware_threads - 1);//开启线程池，只用开启num_threads-1个子线程，因为主线程也可以计算一个序列
     Iterator block_start = first;//序列开始位置
-    for (int i  = 0; i < (hardware_threads - 1); ++i) {//这里只分配子线程的任务序列
+    for (int i  = 0; i < (hardware_threads - 1); ++i) 
+    {//这里只分配子线程的任务序列
         Iterator block_end = block_start;
         std::advance(block_end, block_size);//迭代器block_end向前移动block_size
         threads[i] = std::thread (Quantum_Adder_accumulate_block(), std::ref(QuantumImageOne), std::ref(QuantumImageTwo), block_start, block_end, colums, 
@@ -210,10 +224,12 @@ void Quantum_Adder::Adder_Operator_parallel_accumulate(const vector<vector<vecto
     Quantum_Adder_accumulate_block()(QuantumImageOne, QuantumImageTwo, block_start, last, colums, 
                                     QuantumAdderResults, QuantumAdderCarry, QuantumAdderOverFlow, Debug);//主线程的任务，注意是last
     std::for_each(threads.begin(), threads.end(), std::mem_fn(&thread::join));//等待子线程完成
-    if (Debug) {
+    if (Debug) 
+    {
 
     }
 }
+
 /********************************************************************************
 ****函数名：QuantumImage_Adder_Operator()
 ****说  明：量子加法器
@@ -224,8 +240,10 @@ void Quantum_Adder::Adder_Operator_parallel_accumulate(const vector<vector<vecto
 ****bool Debug：是否显示
 ****返回值：无
 ********************************************************************************/
-void Quantum_Adder::QuantumImage_Adder_Operator(NEQR& NeqrOne, NEQR& NeqrTwo, NEQR& Result, bool Debug) {
-    if (Debug) {
+void Quantum_Adder::QuantumImage_Adder_Operator(NEQR& NeqrOne, NEQR& NeqrTwo, NEQR& Result, bool Debug) 
+{
+    if (Debug) 
+    {
 		double time;
     	double start;
 		std::cout << "NEQR Quantum Image Adder Operator!" << std::endl;
@@ -238,7 +256,8 @@ void Quantum_Adder::QuantumImage_Adder_Operator(NEQR& NeqrOne, NEQR& NeqrTwo, NE
         time = ((double)getTickCount() - start) / getTickFrequency() * 1000;
     	std::cout << "Time of Adder Operator = " << time << " ms" << std::endl;
 	}
-	else {
+	else 
+    {
         Reset_Vector();          //清空结果和标志
         QuantumImageOne = NeqrOne.Get_Quantum_Image_Pixel();
         QuantumImageTwo = NeqrTwo.Get_Quantum_Image_Pixel();
@@ -246,16 +265,21 @@ void Quantum_Adder::QuantumImage_Adder_Operator(NEQR& NeqrOne, NEQR& NeqrTwo, NE
         Result.Set_Quantum_Image_Pixel(QuantumAdderResults);
     }
 }
+
 /********************************************************************************
 ****函数名：Reset_Vector()
 ****说  明：清空容器
 ****参  数：无
 ****返回值：无
 ********************************************************************************/
-void Quantum_Adder::Reset_Vector(void) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			for (int k = 0; k < 8; ++k) {
+void Quantum_Adder::Reset_Vector(void) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			for (int k = 0; k < 8; ++k) 
+            {
 				QuantumAdderResults[i][j][k] = QuantumState[0];
                 QuantumAdderCarry[i][j][k] = QuantumState[0];         
 			}
@@ -263,6 +287,7 @@ void Quantum_Adder::Reset_Vector(void) {
 		}
 	}
 }
+
 /********************************************************************************
 ****函数名：size()
 ****说  明：获取NEQR量子图像大小
@@ -270,7 +295,8 @@ void Quantum_Adder::Reset_Vector(void) {
 ****NEQR &QuantumImage:量子图像
 ****返回值：无
 ********************************************************************************/
-void Quantum_Adder::size(NEQR& QuantumImage) {
+void Quantum_Adder::size(NEQR& QuantumImage) 
+{
 	Height = QuantumImage.Get_Image_Height();
 	Width = QuantumImage.Get_Image_Width();
 	QuantumNumX = QuantumImage.Get_QuantumNumX();
@@ -278,22 +304,28 @@ void Quantum_Adder::size(NEQR& QuantumImage) {
 	//std::cout << "Height,Width= " << Height << "," << Width << std::endl;
 	//std::cout << "QuantumNumX,QuantumNumY,QuantumNumTotal= " << QuantumNumX << "," << QuantumNumY << "," << QuantumNumTotal << std::endl;
 }
+
 /******************************************************************************
 ****函数名：Show_Results()
 ****说  明：显示结果
 ****参  数：无
 ****返回值：无
 *******************************************************************************/
-void Quantum_Adder::Show_Results(void) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
+void Quantum_Adder::Show_Results(void) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
             std::cout << "QuantumAdderResults[" << i << "][" << j << "] = |" << QuantumAdderOverFlow[i][j] << ">" << "|";
-			for (int k = 0; k < 8; ++k) {
+			for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumAdderResults[i][j][k];      
 			}
             std::cout << ">  ";
             std::cout << "QuantumAdderCarry[" << i << "][" << j << "] = |";
-            for (int k = 0; k < 8; ++k) {
+            for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumAdderCarry[i][j][k];      
 			}
             std::cout << ">  ";
@@ -301,6 +333,7 @@ void Quantum_Adder::Show_Results(void) {
 		}
 	}
 }
+
 /******************************************************************************
 ****函数名：Show_Results()
 ****说  明：显示结果
@@ -308,16 +341,21 @@ void Quantum_Adder::Show_Results(void) {
 ****string name：名字
 ****返回值：无
 *******************************************************************************/
-void Quantum_Adder::Show_Results(string name) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
+void Quantum_Adder::Show_Results(string name) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
             std::cout << name << "_Results[" << i << "][" << j << "] = |" << QuantumAdderOverFlow[i][j] << ">" << "|";
-			for (int k = 0; k < 8; ++k) {
+			for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumAdderResults[i][j][k];      
 			}
             std::cout << ">  ";
             std::cout << name << "_Carry[" << i << "][" << j << "] = |";
-            for (int k = 0; k < 8; ++k) {
+            for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumAdderCarry[i][j][k];      
 			}
             std::cout << ">  ";
@@ -325,21 +363,24 @@ void Quantum_Adder::Show_Results(string name) {
 		}
 	}
 }
+
 /******************************************************************************
 ****函数名：Delete()
 ****说  明：删除容器
 ****参  数：无
 ****返回值：无
 *******************************************************************************/
-void Quantum_Adder::Delete() {
+void Quantum_Adder::Delete() 
+{
 	vector<int>().swap(ClassicImageXaxis);								
 	vector<int>().swap(ClassicImageYaxis);
     vector<vector<char> >().swap(QuantumAdderOverFlow);
-    vector<vector<vector<char> > >().swap(QuantumImageOne);	
-    vector<vector<vector<char> > >().swap(QuantumImageTwo);	
-    vector<vector<vector<char> > >().swap(QuantumAdderCarry);								
-	vector<vector<vector<char> > >().swap(QuantumAdderResults);
+    vector<vector<vector<char>>>().swap(QuantumImageOne);	
+    vector<vector<vector<char>>>().swap(QuantumImageTwo);	
+    vector<vector<vector<char>>>().swap(QuantumAdderCarry);								
+	vector<vector<vector<char>>>().swap(QuantumAdderResults);
 }	
+
 /********************************************************************************
 ****函数名：Reverse_Operator()
 ****说  明：量子取反子模块
@@ -348,11 +389,14 @@ void Quantum_Adder::Delete() {
 ****bool Debug：是否显示
 ****返回值：无
 ********************************************************************************/
-void Quantum_Reverse_accumulate_block::Reverse_Operator(vector<char>& NumOne, bool Debug) {
-    for (int size = 0; size < NumOne.size(); size++) {
+void Quantum_Reverse_accumulate_block::Reverse_Operator(vector<char>& NumOne, bool Debug) 
+{
+    for (int size = 0; size < NumOne.size(); size++) 
+    {
         Not_Gate(NumOne[size], Debug);
     }
 }
+
 /******************************************************************************
 ****函数名：Quantum_Reverse_accumulate_block::operator()
 ****说  明：量子图像取反并行计算子单元
@@ -365,13 +409,17 @@ void Quantum_Reverse_accumulate_block::Reverse_Operator(vector<char>& NumOne, bo
 ****返回值：无
 *******************************************************************************/
 template<typename Iterator>
-void Quantum_Reverse_accumulate_block::operator()(Iterator first, Iterator last, Iterator colums, vector<vector<vector<char> > >& QuantumImageReverse, bool Debug) {
-    for (int m = *first; m <= *(last-1); ++m) {
-		for (int n = 0; n <= *(colums-1); ++n) {
+void Quantum_Reverse_accumulate_block::operator()(Iterator first, Iterator last, Iterator colums, vector<vector<vector<char>>>& QuantumImageReverse, bool Debug) 
+{
+    for (int m = *first; m <= *(last-1); ++m) 
+    {
+		for (int n = 0; n <= *(colums-1); ++n) 
+        {
             Reverse_Operator(QuantumImageReverse[m][n], Debug);
 		}
 	}
 }
+
 /******************************************************************************
 ****函数名：Complement_Operator()
 ****说  明：取补操作
@@ -384,9 +432,11 @@ void Quantum_Reverse_accumulate_block::operator()(Iterator first, Iterator last,
 ****bool Debug：是否调试打印
 ****返回值：无
 *******************************************************************************/
-void Quantum_Complement_accumulate_block::Complement_Operator(const vector<char>& Number, const vector<char>& Unit, vector<char>& Complement, vector<char>& Carry, char& OverFlow, bool Debug) {
+void Quantum_Complement_accumulate_block::Complement_Operator(const vector<char>& Number, const vector<char>& Unit, vector<char>& Complement, vector<char>& Carry, char& OverFlow, bool Debug) 
+{
     Quantum_Adder_Operator(Number, Unit, Complement, Carry, OverFlow, Debug);
 }
+
 /******************************************************************************
 ****函数名：Quantum_Complement_accumulate_block::operator()
 ****说  明：量子取补多线程并行计算子模块
@@ -403,14 +453,18 @@ void Quantum_Complement_accumulate_block::Complement_Operator(const vector<char>
 ****返回值：无
 *******************************************************************************/
 template<typename Iterator>
-void Quantum_Complement_accumulate_block::operator()(const vector<vector<vector<char> > >& QuantumImageSrc, const vector<vector<vector<char> > >& QuantumImageUnit, 
-Iterator first, Iterator last, Iterator colums, vector<vector<vector<char> > >& QuantumImageComplement, vector<vector<vector<char> > >& AdderCarry, vector<vector<char> >& AdderOverFlow, bool Debug) {
-    for (int m = *first; m <= *(last-1); ++m) {
-		for (int n = 0; n <= *(colums-1); ++n) {
+void Quantum_Complement_accumulate_block::operator()(const vector<vector<vector<char>>>& QuantumImageSrc, const vector<vector<vector<char>>>& QuantumImageUnit, 
+Iterator first, Iterator last, Iterator colums, vector<vector<vector<char>>>& QuantumImageComplement, vector<vector<vector<char>>>& AdderCarry, vector<vector<char> >& AdderOverFlow, bool Debug) 
+{
+    for (int m = *first; m <= *(last-1); ++m) 
+    {
+		for (int n = 0; n <= *(colums-1); ++n) 
+        {
             Complement_Operator(QuantumImageSrc[m][n], QuantumImageUnit[m][n], QuantumImageComplement[m][n], AdderCarry[m][n], AdderOverFlow[m][n], Debug);
 		}
 	}
 }
+
 /********************************************************************************
 ****函数名：Quantum_Subtracter_Operator()
 ****说  明：量子减法器子模块
@@ -423,18 +477,21 @@ Iterator first, Iterator last, Iterator colums, vector<vector<vector<char> > >& 
 ****bool Debug：是否调试打印
 ****返回值：无
 ********************************************************************************/
-void Quantum_Subtracter_accumulate_block::Quantum_Subtracter_Operator(const vector<char>& NumOne, const vector<char>& NumTwo, vector<char>& NumSum, vector<char>& Carry, char& OverFlow, bool Debug) {
+void Quantum_Subtracter_accumulate_block::Quantum_Subtracter_Operator(const vector<char>& NumOne, const vector<char>& NumTwo, vector<char>& NumSum, vector<char>& Carry, char& OverFlow, bool Debug) 
+{
     int NumOneSize = NumOne.size();
     int NumTwoSize = NumTwo.size();
     int HalfAdder = NumOneSize;		//半加器个数
     //执行半加器计算,数组中从高到低位排序
-    for (int half = HalfAdder - 1; half >= 0; --half) {
+    for (int half = HalfAdder - 1; half >= 0; --half) 
+    {
         Cnot_Gate(NumOne[half], NumSum[half], Debug);
         Cnot_Gate(NumTwo[half], NumSum[half], Debug);
         Toffoli_Gate(NumOne[half], NumTwo[half], Carry[half], Debug);
     }
     //串行进位
-    for (int serial = HalfAdder - 2; serial >= 0; --serial) {
+    for (int serial = HalfAdder - 2; serial >= 0; --serial) 
+    {
         Toffoli_Gate(NumSum[serial], Carry[serial + 1], Carry[serial], Debug);
         Cnot_Gate(Carry[serial + 1], NumSum[serial], Debug);
     }
@@ -446,7 +503,8 @@ void Quantum_Subtracter_accumulate_block::Quantum_Subtracter_Operator(const vect
         vector<char> result_temp(NumOneSize);
         vector<char> carry_temp(NumOneSize);
         char flow_temp = QuantumState[0];
-        for (int m = 0; m < NumOneSize - 1; ++m) {
+        for (int m = 0; m < NumOneSize - 1; ++m) 
+        {
             unit_temp[m] = QuantumState[0];
             result_temp[m] = QuantumState[0];
             carry_temp[m] = QuantumState[0];
@@ -463,6 +521,7 @@ void Quantum_Subtracter_accumulate_block::Quantum_Subtracter_Operator(const vect
         vector<char>().swap(carry_temp);
     }
 }
+
 /******************************************************************************
 ****函数名：Quantum_Subtracter_accumulate_block::operator()
 ****说  明：量子减法多线程并行计算子模块
@@ -479,14 +538,18 @@ void Quantum_Subtracter_accumulate_block::Quantum_Subtracter_Operator(const vect
 ****返回值：无
 *******************************************************************************/
 template<typename Iterator>
-void Quantum_Subtracter_accumulate_block::operator()(const vector<vector<vector<char> > >& QuantumImageOne, const vector<vector<vector<char> > >& QuantumImageTwo, 
-Iterator first, Iterator last, Iterator colums, vector<vector<vector<char> > >& QuantumSubtracterResults, vector<vector<vector<char> > >& QuantumSubtracterCarry, vector<vector<char> >& QuantumSubtracterOverFlow, bool Debug) {
-    for (int m = *first; m <= *(last-1); ++m) {
-		for (int n = 0; n <= *(colums-1); ++n) {
+void Quantum_Subtracter_accumulate_block::operator()(const vector<vector<vector<char>>>& QuantumImageOne, const vector<vector<vector<char>>>& QuantumImageTwo, 
+Iterator first, Iterator last, Iterator colums, vector<vector<vector<char>>>& QuantumSubtracterResults, vector<vector<vector<char>>>& QuantumSubtracterCarry, vector<vector<char>>& QuantumSubtracterOverFlow, bool Debug) 
+{
+    for (int m = *first; m <= *(last-1); ++m) 
+    {
+		for (int n = 0; n <= *(colums-1); ++n) 
+        {
             Quantum_Subtracter_Operator(QuantumImageOne[m][n], QuantumImageTwo[m][n], QuantumSubtracterResults[m][n], QuantumSubtracterCarry[m][n], QuantumSubtracterOverFlow[m][n], Debug);
 		}
 	}
 }
+
 /******************************************************************************
 ****函数名：Quantum_Subtracter()
 ****说  明：量子减法构造函数
@@ -498,6 +561,7 @@ Quantum_Subtracter::Quantum_Subtracter()
 	hardware_threads = Obtain_Thread_Num();
 	//std::cout << dec << "Quantum_Subtracter_hardware_threads= " << hardware_threads << std::endl;
 }
+
 /******************************************************************************
 ****函数名：~Quantum_Subtracter()
 ****说  明：量子减法析构函数
@@ -508,6 +572,7 @@ Quantum_Subtracter::~Quantum_Subtracter()
 {
 	Delete();
 }
+
 /********************************************************************************
 ****函数名：QuantumImage_Subtracter_Operator_Init()
 ****说  明：量子减法初始化
@@ -515,73 +580,87 @@ Quantum_Subtracter::~Quantum_Subtracter()
 ****NEQR &neqr:量子图像
 ****返回值：无
 ********************************************************************************/
-void Quantum_Subtracter::QuantumImage_Subtracter_Operator_Init(NEQR& neqr) {
+void Quantum_Subtracter::QuantumImage_Subtracter_Operator_Init(NEQR& neqr) 
+{
     size(neqr);
 	//初始化经典图像X轴坐标
-	for(int i = 0; i < Width; ++i) {
-        ClassicImageXaxis.push_back(i);
+	for(int i = 0; i < Width; ++i) 
+    {
+        ClassicImageXaxis.emplace_back(i);
     }
     //初始化经典图像Y轴坐标
-	for(int j = 0; j < Height; ++j) {
-        ClassicImageYaxis.push_back(j);
+	for(int j = 0; j < Height; ++j) 
+    {
+        ClassicImageYaxis.emplace_back(j);
     }
     //初始化量子图像
     vector<char> pixel_temp;
-	vector<vector<char> > quantum_temp;
+	vector<vector<char>> quantum_temp;
 	//初始化量子图像
-	for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			for (int k = 0; k < 8; ++k) {
-				pixel_temp.push_back(QuantumState[0]);        
+	for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			for (int k = 0; k < 8; ++k) 
+            {
+				pixel_temp.emplace_back(QuantumState[0]);        
 			}
-			quantum_temp.push_back(pixel_temp);
+			quantum_temp.emplace_back(pixel_temp);
 			pixel_temp.clear();
 		}
-		QuantumImageOne.push_back(quantum_temp);
-        QuantumImageTwo.push_back(quantum_temp);
-        QuantumImageReverse.push_back(quantum_temp);
-        QuantumImageComplement.push_back(quantum_temp);
-        QuantumSubtracterResults.push_back(quantum_temp);
-        QuantumSubtracterCarry.push_back(quantum_temp);
+		QuantumImageOne.emplace_back(quantum_temp);
+        QuantumImageTwo.emplace_back(quantum_temp);
+        QuantumImageReverse.emplace_back(quantum_temp);
+        QuantumImageComplement.emplace_back(quantum_temp);
+        QuantumSubtracterResults.emplace_back(quantum_temp);
+        QuantumSubtracterCarry.emplace_back(quantum_temp);
 		quantum_temp.clear();
 	}
     //单位量子图像
     char value = 1;
     vector<char> unit_temp;
-	vector<vector<char> > quantum_unit;
-	for (int k = 0; k < 8; ++k) {
-		if ((0x80 & value) == 0x80) {
-			unit_temp.push_back(QuantumState[1]);          //赋值量子基态1
+	vector<vector<char>> quantum_unit;
+	for (int k = 0; k < 8; ++k) 
+    {
+		if ((0x80 & value) == 0x80) 
+        {
+			unit_temp.emplace_back(QuantumState[1]);          //赋值量子基态1
 		}
-		else {
-			unit_temp.push_back(QuantumState[0]);          //赋值量子基态0
+		else 
+        {
+			unit_temp.emplace_back(QuantumState[0]);          //赋值量子基态0
 		}
 		value = value << 1;
 	}
     //经典图像转换成量子图像
-	for (int m = 0; m < Height; ++m) {
-		for (int n = 0; n < Width; ++n) {
-			quantum_unit.push_back(unit_temp);
+	for (int m = 0; m < Height; ++m) 
+    {
+		for (int n = 0; n < Width; ++n) 
+        {
+			quantum_unit.emplace_back(unit_temp);
 		}
-		QuantumUnitImage.push_back(quantum_unit);
+		QuantumUnitImage.emplace_back(quantum_unit);
 		quantum_unit.clear();
 	}
     //初始化溢出位
     vector<char> overflow_temp;
-	for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			overflow_temp.push_back(QuantumState[0]);
+	for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			overflow_temp.emplace_back(QuantumState[0]);
 		}
-        QuantumSubtracterOverFlow.push_back(overflow_temp);
+        QuantumSubtracterOverFlow.emplace_back(overflow_temp);
         overflow_temp.clear();
 	}
 
 	vector<char>().swap(pixel_temp);
     vector<char>().swap(unit_temp);
     vector<char>().swap(overflow_temp);
-	vector<vector<char> >().swap(quantum_temp);
-	vector<vector<char> >().swap(quantum_unit);
+	vector<vector<char>>().swap(quantum_temp);
+	vector<vector<char>>().swap(quantum_unit);
 }
+
 /********************************************************************************
 ****函数名：Reverse_Operator_parallel_accumulate()
 ****说  明：量子取反多线程并行计算
@@ -594,12 +673,14 @@ void Quantum_Subtracter::QuantumImage_Subtracter_Operator_Init(NEQR& neqr) {
 ****返回值：无
 ********************************************************************************/
 template<typename Iterator>
-void Quantum_Subtracter::Reverse_Operator_parallel_accumulate(vector<vector<vector<char> > >& QuantumImageReverse, Iterator first, Iterator last, Iterator colums, bool Debug) {
+void Quantum_Subtracter::Reverse_Operator_parallel_accumulate(vector<vector<vector<char>>>& QuantumImageReverse, Iterator first, Iterator last, Iterator colums, bool Debug) 
+{
     unsigned long const length = std::distance(first, last);//计算序列的长度
     unsigned long const block_size = length / hardware_threads;//重新计算每个线程需要执行的序列大小
     vector<thread> threads(hardware_threads - 1);//开启线程池，只用开启num_threads-1个子线程，因为主线程也可以计算一个序列
     Iterator block_start = first;//序列开始位置
-    for (int i  = 0; i < (hardware_threads - 1); ++i) {//这里只分配子线程的任务序列
+    for (int i  = 0; i < (hardware_threads - 1); ++i) 
+    {//这里只分配子线程的任务序列
         Iterator block_end = block_start;
         std::advance(block_end, block_size);//迭代器block_end向前移动block_size
         threads[i] = std::thread (Quantum_Reverse_accumulate_block(), block_start, block_end, colums, std::ref(QuantumImageReverse), Debug);//每个子线程的子序列分配
@@ -607,10 +688,12 @@ void Quantum_Subtracter::Reverse_Operator_parallel_accumulate(vector<vector<vect
     }
     Quantum_Reverse_accumulate_block()(block_start, last, colums, QuantumImageReverse, Debug);//主线程的任务，注意是last
     std::for_each(threads.begin(), threads.end(), std::mem_fn(&thread::join));//等待子线程完成
-    if (Debug) {
+    if (Debug) 
+    {
 
     }
 }
+
 /********************************************************************************
 ****函数名：Complement_Operator_parallel_accumulate()
 ****说  明：;量子取补多线程并行计算
@@ -623,12 +706,14 @@ void Quantum_Subtracter::Reverse_Operator_parallel_accumulate(vector<vector<vect
 ****返回值：无
 ********************************************************************************/
 template<typename Iterator>
-void Quantum_Subtracter::Complement_Operator_parallel_accumulate(const vector<vector<vector<char> > >& QuantumImage, Iterator first, Iterator last, Iterator colums, bool Debug) {
+void Quantum_Subtracter::Complement_Operator_parallel_accumulate(const vector<vector<vector<char>>>& QuantumImage, Iterator first, Iterator last, Iterator colums, bool Debug) 
+{
     unsigned long const length = std::distance(first, last);//计算序列的长度
     unsigned long const block_size = length / hardware_threads;//重新计算每个线程需要执行的序列大小
     vector<thread> threads(hardware_threads - 1);//开启线程池，只用开启num_threads-1个子线程，因为主线程也可以计算一个序列
     Iterator block_start = first;//序列开始位置
-    for (int i  = 0; i < (hardware_threads - 1); ++i) {//这里只分配子线程的任务序列
+    for (int i  = 0; i < (hardware_threads - 1); ++i) 
+    {//这里只分配子线程的任务序列
         Iterator block_end = block_start;
         std::advance(block_end, block_size);//迭代器block_end向前移动block_size
         threads[i] = std::thread (Quantum_Complement_accumulate_block(), std::ref(QuantumImage), std::ref(QuantumUnitImage), block_start, block_end, colums, 
@@ -639,6 +724,7 @@ void Quantum_Subtracter::Complement_Operator_parallel_accumulate(const vector<ve
                                         QuantumImageComplement, QuantumSubtracterCarry, QuantumSubtracterOverFlow, Debug);//主线程的任务，注意是last
     std::for_each(threads.begin(), threads.end(), std::mem_fn(&thread::join));//等待子线程完成
 }
+
 /********************************************************************************
 ****函数名：Subtracter_Operator_parallel_accumulate()
 ****说  明：量子减法器多线程并行计算
@@ -652,7 +738,8 @@ void Quantum_Subtracter::Complement_Operator_parallel_accumulate(const vector<ve
 ****返回值：无
 ********************************************************************************/
 template<typename Iterator>
-void Quantum_Subtracter::Subtracter_Operator_parallel_accumulate(const vector<vector<vector<char> > >& QuantumImageOne, vector<vector<vector<char> > >& QuantumImageTwo, Iterator first, Iterator last, Iterator colums, bool Debug) {
+void Quantum_Subtracter::Subtracter_Operator_parallel_accumulate(const vector<vector<vector<char>>>& QuantumImageOne, vector<vector<vector<char>>>& QuantumImageTwo, Iterator first, Iterator last, Iterator colums, bool Debug) 
+{
 	//Reset_Image_Reverse();  //清空反码
     //Reset_Image_Complement();//清空补码
     Reset_Vector();          //清空结果和标志
@@ -664,7 +751,8 @@ void Quantum_Subtracter::Subtracter_Operator_parallel_accumulate(const vector<ve
     unsigned long const block_size = length / hardware_threads;//重新计算每个线程需要执行的序列大小
     vector<thread> threads(hardware_threads - 1);//开启线程池，只用开启num_threads-1个子线程，因为主线程也可以计算一个序列
     Iterator block_start = first;//序列开始位置
-    for (int i  = 0; i < (hardware_threads - 1); ++i) {//这里只分配子线程的任务序列
+    for (int i  = 0; i < (hardware_threads - 1); ++i) 
+    {//这里只分配子线程的任务序列
         Iterator block_end = block_start;
         std::advance(block_end, block_size);//迭代器block_end向前移动block_size
         threads[i] = std::thread (Quantum_Subtracter_accumulate_block(), std::ref(QuantumImageOne), std::ref(QuantumImageComplement), block_start, block_end, colums, 
@@ -675,6 +763,7 @@ void Quantum_Subtracter::Subtracter_Operator_parallel_accumulate(const vector<ve
                                     QuantumSubtracterResults, QuantumSubtracterCarry, QuantumSubtracterOverFlow, Debug);//主线程的任务，注意是last
     std::for_each(threads.begin(), threads.end(), std::mem_fn(&thread::join));//等待子线程完成
 }
+
 /********************************************************************************
 ****函数名：QuantumImage_Adder_Operator()
 ****说  明：量子减法器，数组中从高到低位排序
@@ -685,8 +774,10 @@ void Quantum_Subtracter::Subtracter_Operator_parallel_accumulate(const vector<ve
 ****bool Debug：是否显示
 ****返回值：无
 ********************************************************************************/
-void Quantum_Subtracter::QuantumImage_Subtracter_Operator(NEQR& NeqrOne, NEQR& NeqrTwo, NEQR& Result, bool Debug) {
-    if (Debug) {
+void Quantum_Subtracter::QuantumImage_Subtracter_Operator(NEQR& NeqrOne, NEQR& NeqrTwo, NEQR& Result, bool Debug) 
+{
+    if (Debug) 
+    {
 		double time;
     	double start;
 		std::cout << "NEQR Quantum Image Subtracter Operator!" << std::endl;
@@ -698,53 +789,69 @@ void Quantum_Subtracter::QuantumImage_Subtracter_Operator(NEQR& NeqrOne, NEQR& N
         time = ((double)getTickCount() - start) / getTickFrequency() * 1000;
     	std::cout << "Time of Subtracter Operator = " << time << " ms" << std::endl;
 	}
-	else {
+	else 
+    {
         QuantumImageOne = NeqrOne.Get_Quantum_Image_Pixel();
         QuantumImageTwo = NeqrTwo.Get_Quantum_Image_Pixel();
         Subtracter_Operator_parallel_accumulate(QuantumImageOne, QuantumImageTwo, ClassicImageXaxis.begin(), ClassicImageXaxis.end(), ClassicImageYaxis.end(), false);//减法操作
 		Result.Set_Quantum_Image_Pixel(QuantumSubtracterResults);
     }
 }
+
 /********************************************************************************
 ****函数名：Reset_Image_Reverse()
 ****说  明：清空反码容器
 ****参  数：无
 ****返回值：无
 ********************************************************************************/
-void Quantum_Subtracter::Reset_Image_Reverse(void) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			for (int k = 0; k < 8; ++k) {
+void Quantum_Subtracter::Reset_Image_Reverse(void) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			for (int k = 0; k < 8; ++k) 
+            {
 				QuantumImageReverse[i][j][k] = QuantumState[0];   
 			}
 		}
 	}
 }
+
 /********************************************************************************
 ****函数名：Reset_Image_Complement()
 ****说  明：清空补码容器
 ****参  数：无
 ****返回值：无
 ********************************************************************************/
-void Quantum_Subtracter::Reset_Image_Complement(void) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			for (int k = 0; k < 8; ++k) {
+void Quantum_Subtracter::Reset_Image_Complement(void) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			for (int k = 0; k < 8; ++k) 
+            {
 				QuantumImageComplement[i][j][k] = QuantumState[0];   
 			}
 		}
 	}
 }
+
 /********************************************************************************
 ****函数名：Reset_Vector()
 ****说  明：清空容器
 ****参  数：无
 ****返回值：无
 ********************************************************************************/
-void Quantum_Subtracter::Reset_Vector(void) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
-			for (int k = 0; k < 8; ++k) {
+void Quantum_Subtracter::Reset_Vector(void) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
+			for (int k = 0; k < 8; ++k) 
+            {
 				QuantumSubtracterResults[i][j][k] = QuantumState[0];
                 QuantumSubtracterCarry[i][j][k] = QuantumState[0];         
 			}
@@ -752,6 +859,7 @@ void Quantum_Subtracter::Reset_Vector(void) {
 		}
 	}
 }
+
 /********************************************************************************
 ****函数名：size()
 ****说  明：获取NEQR量子图像大小
@@ -759,7 +867,8 @@ void Quantum_Subtracter::Reset_Vector(void) {
 ****NEQR &QuantumImage:量子图像
 ****返回值：无
 ********************************************************************************/
-void Quantum_Subtracter::size(NEQR &QuantumImage) {
+void Quantum_Subtracter::size(NEQR &QuantumImage) 
+{
 	Height = QuantumImage.Get_Image_Height();
 	Width = QuantumImage.Get_Image_Width();
 	QuantumNumX = QuantumImage.Get_QuantumNumX();
@@ -767,22 +876,28 @@ void Quantum_Subtracter::size(NEQR &QuantumImage) {
 	//std::cout << "Height,Width= " << Height << "," << Width << std::endl;
 	//std::cout << "QuantumNumX,QuantumNumY,QuantumNumTotal= " << QuantumNumX << "," << QuantumNumY << "," << QuantumNumTotal << std::endl;
 }
+
 /******************************************************************************
 ****函数名：Show_Results()
 ****说  明：显示结果
 ****参  数：无
 ****返回值：无
 *******************************************************************************/
-void Quantum_Subtracter::Show_Results(void) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
+void Quantum_Subtracter::Show_Results(void) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
             std::cout << "QuantumSubtracterResults[" << i << "][" << j << "] = |" << QuantumSubtracterOverFlow[i][j] << ">" <<"|";
-			for (int k = 0; k < 8; ++k) {
+			for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumSubtracterResults[i][j][k];      
 			}
             std::cout << ">  ";
             std::cout << "QuantumSubtracterCarry[" << i << "][" << j << "] = |";
-            for (int k = 0; k < 8; ++k) {
+            for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumSubtracterCarry[i][j][k];      
 			}
             std::cout << ">  ";
@@ -790,6 +905,7 @@ void Quantum_Subtracter::Show_Results(void) {
 		}
 	}
 }
+
 /******************************************************************************
 ****函数名：Show_Results()
 ****说  明：显示结果
@@ -797,16 +913,21 @@ void Quantum_Subtracter::Show_Results(void) {
 ****string name：名字
 ****返回值：无
 *******************************************************************************/
-void Quantum_Subtracter::Show_Results(string name) {
-    for (int i = 0; i < Height; ++i) {
-		for (int j = 0; j < Width; ++j) {
+void Quantum_Subtracter::Show_Results(string name) 
+{
+    for (int i = 0; i < Height; ++i) 
+    {
+		for (int j = 0; j < Width; ++j) 
+        {
             std::cout << name << "_Results[" << i << "][" << j << "] = |" << QuantumSubtracterOverFlow[i][j] << ">" << "|";
-			for (int k = 0; k < 8; ++k) {
+			for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumSubtracterResults[i][j][k];      
 			}
             std::cout << ">  ";
             std::cout << name << "_Carry[" << i << "][" << j << "] = |";
-            for (int k = 0; k < 8; ++k) {
+            for (int k = 0; k < 8; ++k) 
+            {
 				std::cout << QuantumSubtracterCarry[i][j][k];      
 			}
             std::cout << ">  ";
@@ -814,21 +935,23 @@ void Quantum_Subtracter::Show_Results(string name) {
 		}
 	}
 }
+
 /******************************************************************************
 ****函数名：Delete()
 ****说  明：删除容器
 ****参  数：无
 ****返回值：无
 *******************************************************************************/
-void Quantum_Subtracter::Delete() {
+void Quantum_Subtracter::Delete() 
+{
 	vector<int>().swap(ClassicImageXaxis);								
 	vector<int>().swap(ClassicImageYaxis);
-    vector<vector<char> >().swap(QuantumSubtracterOverFlow);
-    vector<vector<vector<char> > >().swap(QuantumImageOne);	
-    vector<vector<vector<char> > >().swap(QuantumImageTwo);
-    vector<vector<vector<char> > >().swap(QuantumUnitImage);	
-    vector<vector<vector<char> > >().swap(QuantumImageReverse);		
-    vector<vector<vector<char> > >().swap(QuantumImageComplement);		
-    vector<vector<vector<char> > >().swap(QuantumSubtracterCarry);								
-	vector<vector<vector<char> > >().swap(QuantumSubtracterResults);
+    vector<vector<char>>().swap(QuantumSubtracterOverFlow);
+    vector<vector<vector<char>>>().swap(QuantumImageOne);	
+    vector<vector<vector<char>>>().swap(QuantumImageTwo);
+    vector<vector<vector<char>>>().swap(QuantumUnitImage);	
+    vector<vector<vector<char>>>().swap(QuantumImageReverse);		
+    vector<vector<vector<char>>>().swap(QuantumImageComplement);		
+    vector<vector<vector<char>>>().swap(QuantumSubtracterCarry);								
+	vector<vector<vector<char>>>().swap(QuantumSubtracterResults);
 }	
